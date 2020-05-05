@@ -1,0 +1,27 @@
+<%- include('partials/header'); %>
+<div class="container" align="center">
+    <div class="jumbotron" >
+        <h1>Main Route: All Parts Information</h1>
+        <table class="table"  style="text-align: center">
+            <thead class="thead-dark">
+                <tr>
+                    <th>Scale ID</th>
+                    <th>Part Name</th>
+                    <th>Quantity</th>
+                    <th>Weight</th>
+                    <th>Last Modified</th>
+                </tr>
+            </thead>
+        <%parts.forEach(function(part){%>
+            <tr>
+                <td><%=part.scaleID%></td>
+                <td><a href="/parts/<%=part.scaleID%>/<%=part.name%>"><%=part.name%></a></td>
+                <td><%=part.data[part.data.length - 1].quantity%></td>
+                <td><%=part.weight%></td>
+                <td><%=part.data[part.data.length - 1].created%></td>
+            </tr>
+        <%});%>
+        </table>
+    </div>
+</div>
+<%- include('partials/footer'); %>

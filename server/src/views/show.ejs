@@ -1,0 +1,22 @@
+<%- include('partials/header'); %>
+<div class="container" align="center">
+    <div class="jumbotron" >
+        <h1>Part: <%=parts[0].name%></h1>
+        <a href="/parts/<%=parts[0].scaleID%>/<%=parts[0].name%>/edit">Edit: <%=parts[0].name%></a>
+        <table class="table"  style="text-align: center">
+            <thead class="thead-dark">
+                <tr>
+                    <th>Quantity</th>
+                    <th>Date</th>
+                </tr>
+            </thead>
+        <%parts[0].data.forEach(function(part){%>
+            <tr>
+                <td><%=part.quantity%></td>
+                <td><%=part.created%></td>
+            </tr>
+        <%});%>
+        </table>
+    </div>
+</div>
+<%- include('partials/footer'); %>

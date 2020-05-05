@@ -1,0 +1,45 @@
+<%- include('partials/header'); %>
+<div class="container" align="center">
+    <div class="jumbotron" >
+        <h1>Manually Edit a Part</h1>
+        <form action="/parts/<%=part[0].scaleID%>/<%=part[0].name%>?_method=PUT" method="POST">
+            <div class="container">
+                <div class="row justify-content-md-center" >
+                    <div class="form-check form-check-inline">
+                        <label>Scale ID</label>
+                        <input class="form-check-input ml-1" type="text" value="<%= part[0].scaleID %>"name="part[scaleID]" class="form-control">
+                    </div>
+                    <div class="form-check form-check-inline">
+                        <label>Name</label>
+                        <input class="form-check-input ml-1" type="text" value="<%= part[0].name %>" name="part[name]" class="form-control">
+                    </div>
+                    <div class="form-check form-check-inline">
+                        <label>Quantity</label>
+                        <input class="form-check-input ml-1" type="text" value="<%= part[0].data[part[0].data.length-1].quantity %>" name="part[quantity]" class="form-control">
+                    </div>
+                </div>
+                <div class="row justify-content-md-center mt-3" >
+                    <div class="form-check form-check-inline">
+                        <label> Weight </label>
+                        <input class="form-check-input ml-1" type="text" value="<%= part[0].weight %>" name="part[weight]" class="form-control">
+                    </div>
+                    <div class="form-check form-check-inline">
+                        <label> Zero offset </label>
+                        <input class="form-check-input ml-1" type="text" value="<%= part[0].zero_offset %>" name="part[zero_offset]" class="form-control">
+                    </div>
+                    <div class="form-check form-check-inline">
+                        <label> Calibration Factor </label>
+                        <input class="form-check-input ml-1" type="text" value="<%= part[0].calibration_factor %>" name="part[calibration_factor]" class="form-control">
+                    </div>
+                </div>
+            <div class="form-check">
+               <button class="btn btn-dark mt-3">Update Part</button>
+            </div>
+        </form>
+        <form action="/parts/<%=part[0].scaleID%>/<%=part[0].name%>?_method=DELETE" method="POST">
+            <input type="hidden" name="_method" value="DELETE">
+            <button class="btn btn-dark mt-3 ml-3">Delete Part</button>
+        </form>
+    </div>
+</div>
+<%- include('partials/footer'); %>

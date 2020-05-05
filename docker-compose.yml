@@ -1,0 +1,23 @@
+version: '2'
+
+volumes:
+    mongo-data:
+
+services:
+  container:
+    build: ./server
+    privileged: true
+    ports:
+      - "80:80"
+  mongo:
+    image: arm64v8/mongo
+    restart: always
+    volumes:
+      - 'mongo-data:/data/db'
+    ports:
+      - "27017:27017"
+  webcam:
+    build: ./webcam
+    privileged: true
+    ports:
+      - "8080:8080"
