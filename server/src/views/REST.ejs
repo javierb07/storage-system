@@ -1,105 +1,97 @@
-<!DOCTYPE html>
-<html>
-<head>
-	<title>Storage System RESTful Routes</title>
-<!-- 	<link rel="stylesheet" type="text/css" href="bootstrap.css"> -->
-	<link rel="stylesheet" type="text/css" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
-</head>
-<body>
+<%- include('partials/header'); %>
 	<div class="container">
-	<div class="row">
-		<div class="col-lg-1"></div>
-		<div class="col-lg-10">
-			<div class="jumbotron">
-				<h1>Storage System RESTful Routes</h1>
-				<p>A table of all 7 RESTful routes + 1 for calibration</p>
-			</div>
-			<table class="table table-hover table-bordered">
-			<thead>	
-				<tr>
-					<th>Name</th>
-					<th>Path</th>
-					<th>HTTP Verb</th>
-					<th>Purpose</th>
-					<th>Mongoose Method</th>
-				</tr>
-			</thead>
-			<tbody>
-				<tr>
-					<td>Index</td>
-					<td>/parts</td>
-					<td>GET</td>
-					<td>Display all parts</td>
-					<td>PartName.find()</td>
-				</tr>
-				<tr>
-					<td>Index</td>
-					<td>/parts/unity</td>
-					<td>GET</td>
-					<td>Returns JSON with all parts and quantity</td>
-					<td>PartName.find()</td>
-				</tr>
-				<tr class="success">
-					<td>New</td>
-					<td>/parts/new</td>
-					<td>GET</td>
-					<td>Show new part form</td>
-					<td>N/A</td>
-				</tr>
-				<tr class="success">
-					<td>Create</td>
-					<td>/parts</td>
-					<td>POST</td>
-					<td>Create a new part, then redirect to index</td>
-					<td>partName.save()</td>
-				</tr>
-				<tr class="info">
-					<td>Show</td>
-					<td>/parts/:scaleID/:name</td>
-					<td>GET</td>
-					<td>Show info about one specific part</td>
-					<td>partName.find()</td>
-				</tr>
-				<tr class="info">
-					<td>Show</td>
-					<td>/parts/unity/:scaleID/:name</td>
-					<td>GET</td>
-					<td>Respond with JSON info about one specific part</td>
-					<td>partName.find()</td>
-				</tr>
-				<tr class="warning">
-					<td>Edit</td>
-					<td>/parts/:scaleID/:name/edit</td>
-					<td>GET</td>
-					<td>Show edit form for one part</td>
-					<td>partName.find()</td>
-				</tr>
-				<tr class="warning">
-					<td>Update</td>
-					<td>/parts/:scaleID/:name</td>
-					<td>PUT</td>
-					<td>Update a particular part</td>
-					<td>partName.findByIdAndUpdate()</td>
-				</tr>
-				<tr class="danger">
-					<td>Destroy</td>
-					<td>/parts/:scaleID/:name</td>
-					<td>DELETE</td>
-					<td>Delete a particular part and all its data</td>
-					<td>partName.findByIdAndRemove()</td>
-				</tr>
-				<tr class="info">
-					<td>Calibration</td>
-					<td>/parts/info/:scaleID/:name</td>
-					<td>GET</td>
-					<td>Return calibration info about one specific part</td>
-					<td>partName.find()</td>
-				</tr>
-			</tbody>
-		</table>
-		</div>
-		<div class="col-lg-1"></div>
-	</div>
+        <div class="row">
+            <div class="col-lg-1"></div>
+            <div class="col-lg-10">
+                <div class="jumbotron">
+                    <h1>Storage System RESTful Routes</h1>
+                    <p>A table of RESTful routes</p>
+                </div>
+                <table id="rest-table" class="table table-hover table-bordered">
+                <thead>	
+                    <tr>
+                        <th>Name</th>
+                        <th>Path</th>
+                        <th>HTTP Verb</th>
+                        <th>Purpose</th>
+                        <th>Mongoose Method</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Index</td>
+                        <td>/parts</td>
+                        <td>GET</td>
+                        <td>Display all parts</td>
+                        <td>PartName.find()</td>
+                    </tr>
+                    <tr>
+                        <td>Index</td>
+                        <td>/parts/unity</td>
+                        <td>GET</td>
+                        <td>Returns JSON with all parts and quantity</td>
+                        <td>PartName.find()</td>
+                    </tr>
+                    <tr class="success">
+                        <td>New</td>
+                        <td>/parts/new</td>
+                        <td>GET</td>
+                        <td>Show new part form</td>
+                        <td>N/A</td>
+                    </tr>
+                    <tr class="success">
+                        <td>Create</td>
+                        <td>/parts</td>
+                        <td>POST</td>
+                        <td>Create a new part, then redirect to index</td>
+                        <td>partName.save()</td>
+                    </tr>
+                    <tr class="info">
+                        <td>Show</td>
+                        <td>/parts/:scaleID/:name</td>
+                        <td>GET</td>
+                        <td>Show info about one specific part</td>
+                        <td>partName.find()</td>
+                    </tr>
+                    <tr class="info">
+                        <td>Show</td>
+                        <td>/parts/unity/:scaleID/:name</td>
+                        <td>GET</td>
+                        <td>Respond with JSON info about one specific part</td>
+                        <td>partName.find()</td>
+                    </tr>
+                    <tr class="warning">
+                        <td>Edit</td>
+                        <td>/parts/:scaleID/:name/edit</td>
+                        <td>GET</td>
+                        <td>Show edit form for one part</td>
+                        <td>partName.find()</td>
+                    </tr>
+                    <tr class="warning">
+                        <td>Update</td>
+                        <td>/parts/:scaleID/:name</td>
+                        <td>PUT</td>
+                        <td>Update a particular part</td>
+                        <td>partName.findByIdAndUpdate()</td>
+                    </tr>
+                    <tr class="danger">
+                        <td>Destroy</td>
+                        <td>/parts/:scaleID/:name</td>
+                        <td>DELETE</td>
+                        <td>Delete a particular part and all its data</td>
+                        <td>partName.findByIdAndRemove()</td>
+                    </tr>
+                    <tr class="info">
+                        <td>Calibration</td>
+                        <td>/parts/info/:scaleID/:name</td>
+                        <td>GET</td>
+                        <td>Return calibration info about one specific part</td>
+                        <td>partName.find()</td>
+                    </tr>
+                </tbody>
+            </table>
+            </div>
+            <div class="col-lg-1"></div>
+        </div>
 	</div>	
-</body>
-</html>
+<%- include('partials/footer'); %>

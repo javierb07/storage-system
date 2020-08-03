@@ -18,6 +18,7 @@ services:
       - "27017:27017"
   webcam:
     build: ./webcam
+    restart: always
     privileged: true
     ports:
       - "8080:8080"

@@ -1,9 +1,9 @@
 // Import necessary libraries
 #include <Wire.h>   // I2C protocol library
-#include <EEPROM.h> // Needed to record user settings
 #include <SparkFun_Qwiic_Scale_NAU7802_Arduino_Library.h>   // Qwiic scale library by SparkFun
 #include <Arduino.h>
 #include <WiFi.h>
+#include <ArduinoHttpClient.h>
 #include <ArduinoJson.h>
 
 NAU7802 myScale; // Create instance of the NAU7802 class
@@ -15,49 +15,77 @@ bool settingsDetected = false; // Used to prompt user to calibrate their scale
 float avgWeights[AVG_SIZE];
 byte avgWeightSpot = 0;
 
-float partWeight = 6;
+// Container information
+String containerMongoID;
+String containerID = "Container 1";  // Set name of container
+String localURL;
+
+// Part information
+String partMongoID;
+String partID;
+float partWeight = 0;
+float zero_offset = 0;
+float calibration_factor = 0;
 int numberParts = 0;
-String scaleID = "1";
+
+// Other variables needed
+bool partFound = false;
 bool partChanged = false;
 int lastPartNumber = 0;
-String partID = "Screw_1_4-20x1_inch";
-String newPartID = "";
 
-char* ssid = "CDI";
-char* password = "CDIPurdue2016";
+// Wi-Fi connection 
+char* ssid = "Darkfyre";
+char* password = "bufandachunga";
+String token = "CDesignLabToken";
 int PORT = 80;
-IPAddress server(10,0,1,129);  
-//char* server = "51b5b03f95c044f878f8ddeae47fbf4b.balena-devices.com";
-WiFiClient client;  // Initialize the client library
+IPAddress server(192,168,0,10);  
+WiFiClient wifi;  // Initialize the client library
+HttpClient client = HttpClient(wifi, server, PORT);
 
-void setup()
-{
+// Calibration server
+WiFiServer serverCal(80); // Server for calibration purpouses
+bool alreadyConnected = false; // whether or not the client was connected previously
+String header;  // Variable to store the HTTP request
+unsigned long currentTime = millis(); // Current time
+unsigned long previousTime = 0; // Previous time
+const long timeoutTime = 2000;  // Define timeout time in milliseconds (example: 2000ms = 2s)
+bool calibrateServer = false;
+
+void setup() {
     Serial.begin(9600); // Open serial port at 9600 baud
     delay(100);
     Serial.println("Intelligent Storage System");
 
     WiFi.begin(ssid, password);
     while (WiFi.status() != WL_CONNECTED) {
-        delay(500);
-        Serial.print("Connecting to WiFi..");
+      delay(500);
+      Serial.print("Connecting to WiFi..");
     }
     Serial.println("");
     Serial.println("WiFi connected");
     Serial.println("IP address: ");
     Serial.println(WiFi.localIP());
-    // Make a HTTP POST request to set up the part:
-    partSetupRequest(partID, scaleID);
+    localURL = WiFi.localIP().toString();
+    serverCal.begin();
 
+    // Check if a container associated with the current local IP already exists
+    if (!findContainerByURLRequest(localURL)){
+      // Make a HTTP POST request to set up the container:
+      containerSetupRequest(containerID, localURL);
+    }
+    // If there is no part associated to the container create one
+    if (!partFound){
+      partSetupRequest(containerMongoID);
+    }
+    
     Wire.begin(); // Initiate the Wire library and join the I2C bus as a master or slave
     Wire.setClock(400000); // Qwiic Scale is capable of running at 400kHz if desired
-    if (myScale.begin() == false)
-    {
-        Serial.println("Scale not detected. Please check wiring. Freezing...");
-        while (1);
+    if (myScale.begin() == false) {
+      Serial.println("Scale not detected. Please check wiring. Freezing...");
+      while (1);
     }
     Serial.println("Scale detected!");
 
-    readSettingsRequest(partID, scaleID); //Load zeroOffset, calibrationFactor, and partWeight from server
     myScale.setSampleRate(NAU7802_SPS_320); // Increase to max sample rate
     myScale.calibrateAFE(); // Re-cal analog front end when we change gain, sample rate, or channel 
 
@@ -67,62 +95,229 @@ void setup()
     Serial.println(myScale.getCalibrationFactor());
     if(myScale.getZeroOffset()==0 && myScale.getCalibrationFactor()==0){
       Serial.println("Scale not calibrated. Entering calibration");
-      calibrateScale();
+      calibrateScaleServer();
     }
 }
 
-void loop()
-{
-  if(myScale.available() == true) // Returns true if Cycle Ready bit is set (conversion is complete)
-  {    
+void loop() {
+  if(myScale.available() == true) { // Returns true if Cycle Ready bit is set (conversion is complete)     
+    // Raw readings
     long currentReading = myScale.getReading(); // Returns 24-bit reading.
     float currentWeight = myScale.getWeight(); // Once you've set zero offset and cal factor, you can ask the library to do the calculations for you
     Serial.print("Reading: ");
     Serial.print(currentReading);
     Serial.print("\tWeight: ");
     Serial.print(currentWeight, 2); // Print 2 decimal places
-
+    // Weight calculations
     avgWeights[avgWeightSpot++] = currentWeight;
-    if(avgWeightSpot == AVG_SIZE) avgWeightSpot = 0;
-    
+    if(avgWeightSpot == AVG_SIZE) { avgWeightSpot = 0; } 
     float avgWeight = 0;
-    for (int x = 0 ; x < AVG_SIZE ; x++) avgWeight += avgWeights[x];
-    
+    for (int x = 0 ; x < AVG_SIZE ; x++) { avgWeight += avgWeights[x]; }
     avgWeight /= AVG_SIZE;
-
     Serial.print("\tAvgWeight: ");
     Serial.print(avgWeight, 2); // Print 2 decimal places
-
+    // Number of parts calculations
     lastPartNumber = numberParts;
     numberParts = round(avgWeight/partWeight);
     Serial.print("\tnumberParts: ");
     Serial.println(numberParts); 
-    
     if(numberParts != lastPartNumber) { partChanged = true; }
     // Send request only if number of parts has changed
     if(partChanged){
       // Make a HTTP PUT request to update the part:
-      updatePartRequest(partID,scaleID,numberParts);    
+      updatePartRequest(containerMongoID, partMongoID, partID, partWeight, myScale.getZeroOffset(), myScale.getCalibrationFactor(), numberParts);      
       partChanged = false;
     }
-
-    if(settingsDetected == false) Serial.print("\tScale not calibrated. Press 'c'.");
+    // Calibration handling section
+    if(settingsDetected == false) { Serial.print("\tScale not calibrated. Press 'c'."); }
     Serial.println();
-
-    if (Serial.available())
-    {
+    if (Serial.available()) {
       byte incoming = Serial.read();
-      if (incoming == 't') // Tare the scale
-        myScale.calculateZeroOffset();
-      else if (incoming == 'c') // Calibrate
-        calibrateScale();
+      if (incoming == 't') { myScale.calculateZeroOffset(); } // Tare the scale 
+      else if (incoming == 'c') { calibrateScaleSerial(); } // Calibrate
     }
+    listenForCalibration();
+    if (calibrateServer) { calibrateScaleServer(); }
   }
 }
 
-// Gives user the ability to set a known weight on the scale and calculate a calibration factor, as well as entering weight of store part
-void calibrateScale(void)
-{
+// Function to find if there is already a container with the local IP of the microcontroller in the database
+bool findContainerByURLRequest(String localURL){
+  Serial.println("making POST request to find a container by URL");
+  String contentType = "application/x-www-form-urlencoded";
+  String postData = "localURL="+localURL+"&token="+token;   
+  client.post("/containers/findByURL", contentType, postData);
+  // Read the status code and body of the response
+  int statusCode = client.responseStatusCode();
+  StaticJsonDocument<300> containerData;
+  String info = client.responseBody();  
+  deserializeJson(containerData, info);
+  containerMongoID = containerData["id"].as<String>();
+  Serial.print("Status code: ");
+  Serial.println(statusCode);
+  Serial.print("Response: ");
+  Serial.println(containerMongoID);
+  if (containerMongoID != "null"){
+    containerID = containerData["nameID"].as<String>();
+    partMongoID = containerData["partID"].as<String>();
+    if(partMongoID != "null"){
+      Serial.println(partMongoID);
+      partFound = true;
+      partID = containerData["partName"].as<String>();
+      partWeight = containerData["weight"];
+      zero_offset = containerData["zero_offset"];
+      calibration_factor = containerData["calibration_factor"];
+      numberParts = containerData["quantity"];
+      myScale.setCalibrationFactor(calibration_factor);
+      myScale.setZeroOffset(zero_offset);
+      settingsDetected = true;
+    }
+    return true;    
+  } else {
+    return false;
+  }
+}
+
+// Set up for a new container in database
+void containerSetupRequest(String containerID, String localURL){
+  Serial.println("making POST request to set up a container");
+  String contentType = "application/x-www-form-urlencoded";
+  String postData = "nameID="+containerID+"&localURL="+localURL+"&token="+token;   
+  client.post("/containers", contentType, postData);
+  // Read the status code and body of the response
+  int statusCode = client.responseStatusCode();
+  String response = client.responseBody();
+  containerMongoID = response.substring(1,response.length()-1);
+  Serial.print("Status code: ");
+  Serial.println(statusCode);
+  Serial.print("Response: ");
+  Serial.println(containerMongoID);  
+}
+
+// Set up for a new part in database
+void partSetupRequest(String containerMongoID){
+  Serial.println("making POST request to set up a part");
+  String contentType = "application/x-www-form-urlencoded";
+  String postData = "token="+token; 
+  client.post("/containers/"+containerMongoID, contentType, postData);
+  // Read the status code and body of the response
+  int statusCode = client.responseStatusCode();
+  String response = client.responseBody();
+  partMongoID = response.substring(1,response.length()-1);
+  Serial.print("Status code: ");
+  Serial.println(statusCode);
+  Serial.print("Response: ");
+  Serial.println(partMongoID);  
+}
+
+// Update a part with all information in database
+void updatePartRequest(String containerMongoID, String partMongoID, String partID, float weight, int zero_offset, float calibration_factor, int quantity){
+  Serial.println("making PUT request to update a part");
+  String contentType = "application/x-www-form-urlencoded";
+  String putData = "nameID="+partID+"&weight="+weight+"&zero_offset="+zero_offset+"&calibration_factor="+calibration_factor+"&quantity="+quantity+"&token="+token;   
+  String route = "/containers/"+containerMongoID+"/"+partMongoID;
+  client.put(route, contentType, putData);
+  // Read the status code and body of the response
+  int statusCode = client.responseStatusCode();
+  String response = client.responseBody();  
+  Serial.print("Status code: ");
+  Serial.println(statusCode);
+  Serial.print("Response: ");
+  Serial.println(response);  
+}
+
+// Gives user the ability to set a known weight on the scale and calculate a calibration factor, as well as entering weight of a part using a server
+void calibrateScaleServer(void) {
+  Serial.println();
+  Serial.println();
+  Serial.println("Scale calibration");
+
+  bool calibrating = true;
+  bool zero_offset_done = false;
+  bool weight_on_scale = false;
+  bool part_weight_set = false;
+  while (calibrating) {
+    WiFiClient clientCal = serverCal.available();  
+    if (clientCal) {
+      Serial.println("New Client.");          // Print a message out in the serial port
+      String currentLine = "";                // Make a string to hold incoming data from the client
+      currentTime = millis();
+      previousTime = currentTime;
+      while (clientCal.connected() && currentTime - previousTime <= timeoutTime) { // Loop while the client's connected
+        currentTime = millis();
+        if (clientCal.available()) {             // if there's bytes to read from the client,
+          char c = clientCal.read();             // read a byte, then
+          Serial.write(c);                    // print it out the serial monitor
+          header += c;
+          if (c == '\n') {                    // If the byte is a newline character
+            // if the current line is blank, you got two newline characters in a row.
+            // that's the end of the client HTTP request, so send a response:
+            if (currentLine.length() == 0) {
+              // HTTP headers always start with a response code (e.g. HTTP/1.1 200 OK)
+              // and a content-type so the client knows what's coming, then a blank line:
+              clientCal.println("HTTP/1.1 200 OK");
+              clientCal.println("Content-type:text/html");
+              clientCal.println("Connection: close");
+              clientCal.println("Access-Control-Allow-Origin: *");
+              clientCal.println();
+              // Routes
+              if (header.indexOf("GET /zero_offset") >= 0) {
+                myScale.calculateZeroOffset(64); // Zero or Tare the scale. Average over 64 readings
+                Serial.print("New zero offset: ");
+                Serial.println(myScale.getZeroOffset());
+                clientCal.println("weight_value");
+                zero_offset_done = true;
+              } else if (header.indexOf("POST /weight_value") >= 0 && zero_offset_done) {
+                Serial.print("Current weight: ");
+                String response = clientCal.readString();
+                Serial.println(  response);
+                float weightOnScale = response.toFloat();
+                myScale.calculateCalibrationFactor(weightOnScale, 64); // Tell the library how much weight is currently on it
+                Serial.print("New cal factor: ");
+                Serial.println(myScale.getCalibrationFactor(), 2);
+                clientCal.println("part_weight");
+                weight_on_scale = true;
+              } else if (header.indexOf("POST /part_weight") >= 0 && weight_on_scale) {
+                Serial.print("Part weight: ");
+                String response = clientCal.readString();  
+                partWeight = response.toFloat();
+                Serial.println(partWeight);
+                clientCal.println("part_name");
+                part_weight_set = true;
+              } else if (header.indexOf("POST /part_name") >= 0 && part_weight_set) {
+                Serial.print("Part name: ");
+                partID = clientCal.readString();  
+                Serial.println(partID);
+                clientCal.println("done");
+                calibrating = false;
+              }
+              // The HTTP response ends with another blank line
+              clientCal.println();
+              // Break out of the while loop
+              break;
+            } else { // if you got a newline, then clear currentLine
+              currentLine = "";
+            }
+          } else if (c != '\r') {  // if you got anything else but a carriage return character,
+            currentLine += c;      // add it to the end of the currentLine
+          }
+        }
+      }
+      // Clear the header variable
+      header = "";
+      // Close the connection
+      clientCal.stop();
+      Serial.println("Client disconnected.");
+      Serial.println("");
+    }
+  }
+  calibrateServer = false; 
+  updatePartRequest(containerMongoID, partMongoID, partID, partWeight, myScale.getZeroOffset(), myScale.getCalibrationFactor(), 0);   
+  settingsDetected = true;   
+}
+
+// Gives user the ability to set a known weight on the scale and calculate a calibration factor, as well as entering weight of stored part thorugh serial communication
+void calibrateScaleSerial(void) {
   Serial.println();
   Serial.println();
   Serial.println("Scale calibration");
@@ -169,93 +364,62 @@ void calibrateScale(void)
   while (Serial.available()) Serial.read(); // Clear anything in RX buffer
   while (Serial.available() == 0) delay(10); // Wait for user to press key
 
-  newPartID = Serial.readStringUntil('\n');
-
+  partID = Serial.readStringUntil('\n');
   Serial.print("Part name: ");
-  Serial.println(newPartID);
+  Serial.println(partID);
   Serial.println();
-  if(newPartID != ""){
-    partID=newPartID;
-    // Make a HTTP POST request to set up the part:
-    partSetupRequest(partID, scaleID);
-    }
-  updatePartRequest(partID,scaleID,numberParts);      
-  // Commit these values to server
-  // Make a HTTP PUT request to calibrate the part:
-  calibrationRequest(partID,scaleID,partWeight,myScale.getZeroOffset(),myScale.getCalibrationFactor());
-  settingsDetected = true;
+
+  updatePartRequest(containerMongoID, partMongoID, partID, partWeight, myScale.getZeroOffset(), myScale.getCalibrationFactor(), 0);   
+  settingsDetected = true;   
 }
 
-// Reads the current system settings from server
-// If anything looks weird, reset setting to default value
-void readSettingsRequest(String partID, String scaleID)
-{
-  float settingCalibrationFactor; // Value used to convert the load cell reading to lbs or kg
-  long settingZeroOffset; // Zero value that is found when scale is tared
-  float settingPartWeight;  // Weight of the part that's stored
-  if (client.connect(server, PORT)) {
-      Serial.println("Connected to server");
-      Serial.println("Will read settings...");
-      // Make a HTTP POST request to set up the part:
-      client.println("GET /parts/info/"+scaleID+"/"+partID);
-      client.println();
-      delay(1000);
-      StaticJsonDocument<256> info;
-      String line;
-      while(client.available()){
-        line = client.readStringUntil('\r');
+// Function that listen for a calibration queue to trigger calibration function if the system is already running
+void listenForCalibration(void){ 
+  WiFiClient clientCal = serverCal.available();  
+  if (clientCal) {
+    Serial.println("New Client.");          // Print a message out in the serial port
+    String currentLine = "";                // Make a string to hold incoming data from the client
+    currentTime = millis();
+    previousTime = currentTime;
+    while (clientCal.connected() && currentTime - previousTime <= timeoutTime) { // Loop while the client's connected
+      currentTime = millis();
+      if (clientCal.available()) {             // if there's bytes to read from the client,
+        char c = clientCal.read();             // read a byte, then
+        Serial.write(c);                    // print it out the serial monitor
+        header += c;
+        if (c == '\n') {                    // If the byte is a newline character
+          // if the current line is blank, you got two newline characters in a row.
+          // that's the end of the client HTTP request, so send a response:
+          if (currentLine.length() == 0) {
+            // HTTP headers always start with a response code (e.g. HTTP/1.1 200 OK)
+            // and a content-type so the client knows what's coming, then a blank line:
+            clientCal.println("HTTP/1.1 200 OK");
+            clientCal.println("Content-type:text/html");
+            clientCal.println("Connection: close");
+            clientCal.println("Access-Control-Allow-Origin: *");
+            clientCal.println();
+            // Routes
+            if (header.indexOf("GET /calibration") >= 0) {
+              calibrateServer = true;
+              clientCal.println("calibration");
+            } 
+            // The HTTP response ends with another blank line
+            clientCal.println();
+            // Break out of the while loop
+            break;
+          } else { // if you got a newline, then clear currentLine
+            currentLine = "";
+          }
+        } else if (c != '\r') {  // if you got anything else but a carriage return character,
+          currentLine += c;      // add it to the end of the currentLine
+        }
       }
-      deserializeJson(info, line);
-      // Look up the calibration factor
-      settingCalibrationFactor = info["calibration_factor"];
-      // Look up the zero tare point
-      settingZeroOffset = info["zero_offset"];
-      // Look up the part weight
-      settingPartWeight = info["weight"];
-      } else{
-      Serial.println("Failed to connect to server");
     }
-  // Pass these values to the library
-  myScale.setCalibrationFactor(settingCalibrationFactor);
-  myScale.setZeroOffset(settingZeroOffset);
-  // Pass the value the global variable
-  partWeight = settingPartWeight;
-
-  settingsDetected = true; // Assume for the moment that there are good cal values
-  if (settingCalibrationFactor == 0 || settingZeroOffset == 0)
-    settingsDetected = false; // Defaults detected. Prompt user to cal scale.
-}
-
-void partSetupRequest(String partID, String scaleID){
-    if (client.connect(server, PORT)) {
-      Serial.println("Connected to server");
-      // Make a HTTP request:
-      client.println("POST /parts/?scaleID="+scaleID+"&name="+partID);
-      client.println();
-    } else {
-      Serial.println("Failed to connect to server");
-    }
-}
-
-void updatePartRequest( String partID, String scaleID, int quantity ){
-  if (client.connect(server, PORT)) {
-      Serial.println("Connected to server");
-      // Make a HTTP request:
-      client.println("PUT /parts/"+scaleID+"/"+partID+"?quantity="+String(quantity));
-      client.println();
-    } else {
-      Serial.println("Failed to connect to server");
-    }
-}
-
-void calibrationRequest( String partID, String scaleID, float weight, int zero_offset, float calibration_factor){
-  if (client.connect(server, PORT)) {
-    Serial.println("Connected to server");
-    Serial.println("Will calibrate");
-    // Make a HTTP request:
-    client.println("PUT /parts/calibration/"+scaleID+"/"+partID+"?weight="+String(weight)+"&zero_offset="+String(zero_offset)+"&calibration_factor="+String(calibration_factor));
-    client.println();
-  } else{
-    Serial.println("Failed to connect to server");
+    // Clear the header variable
+    header = "";
+    // Close the connection
+    clientCal.stop();
+    Serial.println("Client disconnected.");
+    Serial.println("");
   }
 }

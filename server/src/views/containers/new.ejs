@@ -1,0 +1,29 @@
+<%- include('../partials/header'); %>
+<div class="container" align="center">
+    <div class="jumbotron" >
+        <h1>Create a Container</h1>
+        <div class="card-body">
+            <form class ="form" action="/containers/ " method="POST">
+                <div class="form-group row align-items-center">
+                    <label class="col-lg-4 col-form-label form-control-label">Container name</label>
+                    <div class="col-lg-8">
+                        <input class="form-control" type="text" name="container[nameID]">
+                    </div>
+                </div>
+                <div class="form-group row align-items-center">
+                    <label class="col-lg-4 col-form-label form-control-label">Container Local URL</label>
+                    <div class="col-lg-8">
+                        <input class="form-control" type="text" name="container[localURL]">
+                    </div>
+                </div>
+                <div class="form-group row">
+                    <label class="col-lg-3 col-form-label form-control-label"></label>
+                    <div class="col-lg-9">
+                        <button class="btn btn-dark mt-3">Create</button>                                  
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<%- include('../partials/footer'); %>

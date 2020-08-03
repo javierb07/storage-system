@@ -1,0 +1,38 @@
+<%- include('../partials/header'); %>
+<div class="container" align="center">
+    <div class="jumbotron" >
+        <h1>Showing Container: <a href="/containers/<%=foundContainer._id%>/edit"><%=foundContainer.nameID%></a> Created by: <%=foundContainer.author.username%></h1>
+        <table class="table"  style="text-align: center">
+            <thead class="thead-dark">
+                <tr>
+                    <th>Part Name</th>
+                    <th>Quantity</th>
+                    <th>Date</th>
+                </tr>
+            </thead>
+        <% if (foundContainer.parts.length > 0) { %>
+            <% foundContainer.parts.forEach(function(part){%>
+                <% var name = part.nameID; %>
+                <% var quantity = part.data.slice(-1)[0].quantity; %>
+                <% var created = part.data.slice(-1)[0].date; %>
+                <% var partID = part._id; %>
+                <tr>
+                    <td><a href="/containers/<%=foundContainer._id%>/<%=partID%>"><%=name%></a></td>
+                    <td><%=quantity%></td>
+                    <td><%=created%></td>
+                </tr>
+            <%});%>
+        <% } else { %>
+            <% var name = "-"; %>
+            <% var quantity = "-"; %>
+            <% var created = "-"; %>
+            <tr>
+                <td><%=name %></td>
+                <td><%=quantity%></td>
+                <td><%=created%></td>
+            </tr>
+        <% } %>
+        </table>
+    </div>
+</div>
+<%- include('../partials/footer'); %>

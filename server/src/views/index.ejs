@@ -1,27 +1,44 @@
 <%- include('partials/header'); %>
-<div class="container" align="center">
-    <div class="jumbotron" >
-        <h1>Main Route: All Parts Information</h1>
-        <table class="table"  style="text-align: center">
-            <thead class="thead-dark">
-                <tr>
-                    <th>Scale ID</th>
-                    <th>Part Name</th>
-                    <th>Quantity</th>
-                    <th>Weight</th>
-                    <th>Last Modified</th>
-                </tr>
-            </thead>
-        <%parts.forEach(function(part){%>
-            <tr>
-                <td><%=part.scaleID%></td>
-                <td><a href="/parts/<%=part.scaleID%>/<%=part.name%>"><%=part.name%></a></td>
-                <td><%=part.data[part.data.length - 1].quantity%></td>
-                <td><%=part.weight%></td>
-                <td><%=part.data[part.data.length - 1].created%></td>
-            </tr>
-        <%});%>
-        </table>
+    <div class="container" align="center">
+        <div class="jumbotron" >
+            <h1>All Containers and Parts Information</h1>
+            <table class="table"  style="text-align: center">
+                <thead class="thead-dark">
+                    <tr>
+                        <th>Container ID</th>
+                        <th>Actions</th>
+                        <th>Part ID</th>
+                        <th>Quantity</th>
+                        <th>Weight</th>
+                        <th>Last Modified</th>
+                        <th>By Author</th>
+                    </tr>
+                </thead>
+                <%for (i=0; i < containers.length; i++){%>
+                    <% var container = containers[i]; %>
+                    <% var part = container.parts.slice(-1)[0]; %> 
+                    <tr>
+                        <td><%=container.nameID%></td>
+                        <td>
+                            <p class="container-row"><a href="/containers/<%=container._id%>/">More info</a></p>
+                            <p class="container-row"><a href="/containers/<%=container._id%>/edit">Edit</a></p>
+                        <%if(part != "Empty" && part != undefined && part._id != undefined){%>
+                            <p class="container-row"><a href="/containers/<%=container._id%>/<%=part._id%>/calibration">Calibrate</a></p>
+                        </td>
+                            <td><a href="/containers/<%=container._id%>/<%=part._id%>"><%=part.nameID%></a></td>
+                            <td><%=part.data.slice(-1)[0].quantity%></td>
+                            <td><%=part.weight%></td>
+                            <td><%=part.data.slice(-1)[0].date%></td>
+                        <%} else { %>
+                            <td>-</td>
+                            <td>-</td>
+                            <td>-</td>
+                            <td>-</td>
+                        <% } %>
+                        <td><%=container.author.username%></td>
+                    </tr>
+                <%};%>
+            </table>
+        </div>
     </div>
-</div>
 <%- include('partials/footer'); %>

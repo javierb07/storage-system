@@ -1,0 +1,32 @@
+<%- include('partials/header'); %>
+    <div class="container" align="center">
+        <div class="jumbotron" >
+        <h1>All Users Registered in the System</h1>
+            <table class="table"  style="text-align: center">
+                <thead class="thead-dark">
+                    <tr>
+                        <th>Name</th>
+                        <th>Delete User</th>
+                        <th>Date Registered</th>
+                    </tr>
+                </thead>
+                <% users.forEach(function(user){ %>
+                    <tr>
+                        <td><%=user.username%></td>
+                        <td>
+                            <% if(user.username === "C Design Lab") { %>
+                                <% var type= "hidden"; %>
+                            <% } else {%> 
+                                <% var type= "submit"; %>
+                            <% } %> 
+                            <form  action="/users/<%=user._id%>?_method=DELETE" method="POST">
+                                <input  type="<%=type%>" class="btn btn-xs btn-danger" value="Delete">
+                            </form>      
+                        </td>
+                        <td><%=user.date%></td>
+                    </tr>
+                <% }); %>
+            </table>
+        </div>
+    s</div>
+<%- include('partials/footer'); %>

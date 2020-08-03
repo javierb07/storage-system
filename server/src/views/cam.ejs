@@ -5,7 +5,13 @@
                 <div class="d-flex flex-row justify-content-center">
                     <div class="col-3"></div>
                     <div class="embed-responsive embed-responsive-4by3 col-6">
-                        <iframe class="embed-responsive-item" src="http://51b5b03f95c044f878f8ddeae47fbf4b.balena-devices.com:8080/?action=stream" allowfullscreen></iframe>
+                        <script>
+                            $(document).ready(function(){
+                                var url = "http://" + window.location.host +":8080/?action=stream";
+                                $('#camera').attr('src', url);
+                            });
+                        </script>
+                        <iframe id="camera" class="embed-responsive-item" src="" allowfullscreen></iframe>
                     </div>
                     <div class="col-3"></div>
                 </div>
