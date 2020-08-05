@@ -1,6 +1,6 @@
-
 # Created by https://www.gitignore.io/api/node,python,osx,windows,linux
 
+/.vscode/*
 ### Node ###
 # Logs
 logs

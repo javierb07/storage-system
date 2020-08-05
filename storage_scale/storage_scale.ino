@@ -34,8 +34,8 @@ bool partChanged = false;
 int lastPartNumber = 0;
 
 // Wi-Fi connection 
-char* ssid = "Darkfyre";
-char* password = "bufandachunga";
+char* ssid = "";
+char* password = "";
 String token = "CDesignLabToken";
 int PORT = 80;
 IPAddress server(192,168,0,10);  

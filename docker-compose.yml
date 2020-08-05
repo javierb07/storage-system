@@ -22,3 +22,9 @@ services:
     privileged: true
     ports:
       - "8080:8080"
+  power:
+    build: ./power
+    privileged: true
+    restart: always
+    ports:
+      - "8765:8765"
