@@ -11,7 +11,7 @@ router.get("/:part_id/", middleware.isLoggedIn, function(req, res){
             console.log(err);
             res.render("error", {error: err});
         } else {
-            foundPart.cotainerID = req.params.id;
+            foundPart.containerID = req.params.id;
             res.render("parts/show", {foundPart: foundPart});
         }
     })

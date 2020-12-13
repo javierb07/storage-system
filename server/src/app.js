@@ -17,8 +17,8 @@ var indexRoutes      = require("./routes/index"),
     calibrationRoutes= require("./routes/calibration");
 
 // Set up default mongoose connection
-const host = process.env.HOST || "localhost:27017";
-mongoose.connect('mongodb://'+host+'/storage-system',{ useNewUrlParser: true ,useUnifiedTopology: true}, function(err){
+const host = process.env.HOST || "mongodb://localhost:27017/storage-system";
+mongoose.connect(host,{ useNewUrlParser: true ,useUnifiedTopology: true}, function(err){
     if (err){
         console.log("Conection error to database")
     } else {

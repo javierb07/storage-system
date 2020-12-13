@@ -62,12 +62,6 @@
                             <% var buttonText  = 'Create'; %>  
                             <% var display  = 'none'; %> 
                         <% } %>
-
-                        <%  if (foundContainer.parts.length > 0) {  %>   
-    
-                            <%  } else { %>   
-                
-                            <%  } %>   
                         <form id="part-form" action="/containers/<%=foundContainer._id%>/<%=partID%><%=formURL%>" class ="form"  method="POST">
                             <div class="form-group row align-items-center">
                                 <label class="col-lg-4 col-form-label form-control-label">Part name</label>
