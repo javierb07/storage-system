@@ -2,6 +2,34 @@
     <div class="container" align="center">
         <div class="jumbotron" >
             <h1>System Description</h1>
+            <div align="left">
+                <p>The Intelligent Storage System is an automatic and smart stock management tool with internet of things capabilities. Some of its main features are:</p>
+                <ul>
+                    <li>Automatic database update when stock changes</li>
+                    <li>Easy scalability for hundreds of items</li>
+                    <li>Web grafical user interface</li>
+                    <li>RESTful API</li>
+                    <li>User registration, authorization, and authentication</li>
+                    <li>Remote monitoring with cameras</li>
+                    <li>Power management</li>
+                </ul>
+                <p>The system automatically updates the quantity of an stored item in a bin, via server and client interaction. Each bin is a client of the server, and measures the weight of the item it has stored and calculates the number of items from it.</p>
+                <p> The system is containerized in Docker images to deploy the server and other services.   
+                    A storage unit consists of a bin, a microcontroller with WiFi capabilities, a load cell, and a load cell amplifier.
+                    The system was prototyped with the following elements:
+                </p>
+                <ol>
+                    <li><a href="https://www.espressif.com/en/products/socs/esp32">ESP32 Microcontroler</a></li>
+                    <li><a href="https://www.sparkfun.com/products/14729">Load cell: Load Cell - 5kg, Straight Bar (TAL220B)</a></li>
+                    <li><a href="https://www.sparkfun.com/products/15242">Load cell amplifier</a></li>
+                    <li><a href="https://www.amazon.com/Akro-Mils-08212Blue-Stacking-AkroBins-Hardware/dp/B01AADDCF6/ref=sr_1_49?dchild=1&keywords=bins&qid=1588719027&sr=8-49&pldnSite=1">AkroBins</a></li>
+                    <li>Custom parts, laser cut and 3D printed</li>
+                </ol>
+            </div>
+            <figure>
+                <img id="ISS-image" class="img-fluid rounded mx-auto d-block" src="/media/ISS_Setup.png" alt="Picture Description of the System">
+                <figcaption>System Hardware Setup. Raspberry Pi Server and three storage bins.</figcaption>
+            </figure>
         </div>
     </div>
 <%- include('partials/footer'); %>

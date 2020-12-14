@@ -37,6 +37,10 @@ body {
 #c-image{
     max-width: 50%;
 }
+
+#ISS-image{
+    max-width: 50%;
+}
 #rest-table{
     background-color: #fff ;
 }
