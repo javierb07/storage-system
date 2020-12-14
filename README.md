@@ -1,4 +1,4 @@
-# Storage_System
+# Intelligent Storage System
 An IoT system to monitor storage of materials in bins.
 
 The system is containerized in Docker images to deploy the server and a webcam using balena: https://www.balena.io/
