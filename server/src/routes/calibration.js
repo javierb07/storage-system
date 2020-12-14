@@ -5,7 +5,6 @@ var express     = require("express"),
     Part        = require("../models/part"),
     middleware  = require("../middleware");
 
-
 // Calibration route: Show calibration page
 router.get("/:id/:part_id/calibration", middleware.isLoggedIn, function(req, res){
     Container.findById(req.params.id, function(err, container){
@@ -54,7 +53,6 @@ router.post("/:id/:part_id/calibration/part_name", middleware.isLoggedIn, functi
     var input = req.body.input;
     axios.post("http://"+ip+"/part_name", input);
     res.send("done");
-
 });
 
 module.exports = router;

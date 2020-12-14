@@ -94,4 +94,14 @@ router.get("/camera", middleware.isLoggedIn, function(req, res){
     })
  });
 
+ // RESTful routes 
+router.get("/REST", middleware.isLoggedIn, function(req, res){
+    res.render("REST");
+});
+
+ // About route to describe the system 
+ router.get("/about", middleware.isLoggedIn, function(req, res){
+    res.render("about");
+});
+
 module.exports = router;
