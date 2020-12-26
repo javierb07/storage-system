@@ -1,0 +1,56 @@
+<%- include('../partials/header'); %>
+<div class="container" align="center">
+    <div class="jumbotron" >
+        <h1>Showing Part: <a href="../<%=foundPart.containerID%>/<%=foundPart._id%>/edit"><%=foundPart.nameID%></a></h1>
+        <table class="table"  style="text-align: center">
+            <caption>Calibration Information</caption>
+            <thead class="thead-dark">
+                <tr>
+                    <th>Weight [g]</th>
+                    <th>Zero Offset</th>
+                    <th>Calibration Factor</th>
+                </tr>
+            </thead>
+        <% if (foundPart) { %>
+            <tr>
+                <td><%=foundPart.weight%></td>
+                <td><%=foundPart.zero_offset%></td>
+                <td><%=foundPart.calibration_factor%></td>
+            </tr>
+        <% } else { %>
+            <tr>
+                <td>-</td>
+                <td>-</td>
+                <td>-</td>
+            </tr>
+        <% } %>
+        </table>
+        <table class="table"  style="text-align: center">
+            <caption>Part Quantity Timestamps</caption>
+            <thead class="thead-dark">
+                <tr>
+                    <th>Quantity</th>
+                    <th>Date</th>
+                </tr>
+            </thead>
+        <% if (foundPart.data.length > 0) { %>
+            <% foundPart.data.forEach(function(data){%>
+                <% var quantity = data.quantity; %>
+                <% var date = data.date; %>
+                <tr>
+                    <td><%=quantity%></td>
+                    <td><%=date%></td>
+                </tr>
+            <%});%>
+        <% } else { %>
+            <% var quantity = "-"; %>
+            <% var date = "-"; %>
+            <tr>
+                <td><%=quantity%></td>
+                <td><%=date%></td>
+            </tr>
+        <% } %>
+        </table>
+    </div>
+</div>
+<%- include('../partials/footer'); %>

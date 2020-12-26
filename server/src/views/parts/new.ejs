@@ -1,0 +1,72 @@
+<%- include('../partials/header'); %>
+<div class="container" align="center">
+    <div class="jumbotron" >
+        <h1>Create a Part</h1>
+        <div class="card-body">
+            <form class ="form" action="/containers/parts/new" method="POST">
+                <div class="form-group row align-items-center">
+                    <label for="container-name" class="col-lg-4 col-form-label form-control-label">Associated container</label>
+                    <div class="col-lg-8">
+                        <select class="" name="part[containerID]" id="container-name">
+                            <option value="">Select a container</option>
+                            <% if (containers.length > 0) { %>
+                                <% var containers_exist = true; %>
+                                <% containers.forEach(function(container){%>
+                                    <% var name = container.nameID; %>
+                                    <% var id = container._id; %>
+                                    <option value="<%=id%>"><%=name%></option>
+                                <%});%>
+                            <% } else { %>
+                                <% var name = "-"; %>
+                                <% var containers_exist = false; %>
+                                <option value="">There are no containers to store the parts</option>
+                            <% } %>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group row align-items-center">
+                    <label class="col-lg-4 col-form-label form-control-label">Part name</label>
+                    <div class="col-lg-8">
+                        <input class="form-control" type="text" name="part[nameID]">
+                    </div>
+                </div>
+                <div class="form-group row align-items-center">
+                    <label class="col-lg-4 col-form-label form-control-label">Part weight</label>
+                    <div class="col-lg-8">
+                        <input class="form-control" type="number" min=0 step="any" name="part[weight]">
+                    </div>
+                </div>
+                <div class="form-group row align-items-center">
+                    <label class="col-lg-4 col-form-label form-control-label">Part zero offset</label>
+                    <div class="col-lg-8">
+                        <input class="form-control" type="number" min=0 step="any" name="part[zero_offset]">
+                    </div>
+                </div>
+                <div class="form-group row align-items-center">
+                    <label class="col-lg-4 col-form-label form-control-label">Part calibration factor</label>
+                    <div class="col-lg-8">
+                        <input class="form-control" type="number" min=0 step="any" name="part[calibration_factor]">
+                    </div>
+                </div>
+                <div class="form-group row align-items-center">
+                    <label class="col-lg-4 col-form-label form-control-label">Part quantity</label>
+                    <div class="col-lg-8">
+                        <input class="form-control" type="number" min=0 name="part[quantity]">
+                    </div>
+                </div>
+                <% if (containers_exist) { %>
+                    <% var display = "display:inline" %>
+                <% } else { %>
+                    <% var display = "display:none" %> 
+                <% } %>
+                <div class="form-group row" style=<%=display%>>
+                    <label class="col-lg-3 col-form-label form-control-label"></label>
+                    <div class="col-lg-9">
+                        <button class="btn btn-dark mt-3">Create</button>                                  
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<%- include('../partials/footer'); %>
