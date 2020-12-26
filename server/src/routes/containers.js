@@ -29,7 +29,7 @@ router.get("/json", middleware.isLoggedIn, function(req, res){
     })
  });
 
- // Find by local URL: Return a container created and parts information in JSON format
+// Find by local URL: Return a container created and parts information in JSON format
 router.post("/findByURL", middleware.isLoggedIn, function(req, res){
     var localURL = req.body.localURL;
     Container.find({localURL:localURL}).populate("parts").exec(function(err, container){
@@ -61,7 +61,7 @@ router.get("/new", middleware.isLoggedIn, function(req, res){
     res.render("containers/new");
 });
 
- // Create route: It creates a new container, accessible through form or microcontroller request
+// Create route: It creates a new container, accessible through form or microcontroller request
 router.post("/", middleware.isLoggedIn, function(req, res){
     // Create a container
     if (req.body.container != undefined){       // Handle form
