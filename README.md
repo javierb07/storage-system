@@ -1,9 +1,13 @@
 # Intelligent Storage System
-An IoT system to monitor storage of materials in bins.
+An IoT system to monitor storage of materials in bins. A web interface is used to display the information of quantity over time, and other data, of the stock:
+
+![web-gui](./images/system-info.jpeg)
 
 The system is containerized in Docker images to deploy the server and a webcam using balena: https://www.balena.io/
 
-A storage unit consists of a bin, a microcontroller with WiFi capabilities, a load cell, and a load cell amplifier.
+A storage unit consists of a bin, a microcontroller with WiFi capabilities, a load cell, and a load cell amplifier. The hardware setup can be seen in the following picture:
+
+![hardware](./images/Electronics Setup.jpeg)
 
 The system was developed with the following elements:
 
@@ -14,3 +18,9 @@ The system was developed with the following elements:
 5. Custom parts, laser cut and 3D printed
 
 Uploading the code in storage_scale to the microcontroller a new entry in the server should be automatically added.
+
+The final setup of the prototype looks like this:
+
+![setup](./images/ISS Setup.jpeg)
+
+Video example of the system: https://youtu.be/NZdVXT3DNc8
