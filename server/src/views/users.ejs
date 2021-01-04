@@ -14,10 +14,16 @@
                     <tr>
                         <td><%=user.username%></td>
                         <td>
+                            <% if(currentUser.username === user.username ) { %>
+                                <% var type= "submit"; %>
+                            <% } else {%> 
+                                <% var type= "hidden"; %>
+                            <% } %> 
+                            <% if(currentUser.username === "C Design Lab" && user.username !== "C Design Lab") { %>
+                                <% var type= "submit"; %>
+                            <% } %> 
                             <% if(user.username === "C Design Lab") { %>
                                 <% var type= "hidden"; %>
-                            <% } else {%> 
-                                <% var type= "submit"; %>
                             <% } %> 
                             <form  action="/users/<%=user._id%>?_method=DELETE" method="POST">
                                 <input  type="<%=type%>" class="btn btn-xs btn-danger" value="Delete">

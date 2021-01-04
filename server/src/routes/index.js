@@ -20,7 +20,7 @@ router.post("/register", function(req, res){
     User.register(newUser, req.body.password, function(err, user){
         if(err){
             req.flash("error", err.message);
-            return res.render("register");
+            return res.render("landing");
         }
         passport.authenticate("local")(req, res, function(){
            req.flash("success", "Signed up new user: " + user.username);
@@ -53,13 +53,14 @@ router.get("/camera", middleware.isLoggedIn, function(req, res){
 
  // Show list of registered users
  router.get("/users", middleware.isLoggedIn, function(req, res){
+    var currentUser = req.user;
     User.find({}, function(err, users){
         if(err){
             req.flash("error", "Problem finding users in database");
             console.log(err);
             res.render("error", {error: err});
         } else {
-            res.render("users", {users: users});
+            res.render("users", {users: users, currentUser:currentUser});
         }
     })
  });
