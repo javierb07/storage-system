@@ -13,12 +13,20 @@
                     <div class="jumbotron" >
                         <img id="c-image" class="img-fluid" src="/media/C_Design_Lab.png" alt="C Design Lab">
                         <h1>Intelligent Storage System</h2>
-                        <h2>Login credentials</h1>
-                        <form action="/landing" method="POST">
-                            <input type="text" name="username" placeholder="username">
-                            <input type="password" name="password" placeholder="password">
-                            <input type="submit" value="Login">
-                        </form>
+                        <div class="container" id="landing-container">
+                            <h2>Login credentials</h1>
+                            <form class="col-9" action="/landing" method="POST">
+                                <input class="col-lg-3 col-sm-9" type="text" name="username" placeholder="username">
+                                <input class="col-lg-3 col-sm-9" type="password" name="password" placeholder="password">
+                                <input class="col-lg-1 col-sm-3 landing-text" type="submit" value="Login">
+                            </form>
+                            <h2>Register new user</h1>
+                            <form class="col-9" action="/register" method="POST">
+                                <input class="col-lg-3 col-sm-9" type="text" name="username" placeholder="username">
+                                <input class="col-lg-3 col-sm-9" type="password" name="password" placeholder="password">
+                                <input class="col-lg-1 col-sm-3 landing-text" type="submit" value="Register">
+                            </form>
+                        </div>
                     </div>
                 </div>
                 <div class="container">

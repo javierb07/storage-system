@@ -15,7 +15,7 @@ router.get("/register", middleware.isLoggedIn, function(req, res){
  });
 
 // Handle sign up logic
-router.post("/register", middleware.isLoggedIn, function(req, res){
+router.post("/register", function(req, res){
     var newUser = new User({username: req.body.username});
     User.register(newUser, req.body.password, function(err, user){
         if(err){
@@ -23,7 +23,7 @@ router.post("/register", middleware.isLoggedIn, function(req, res){
             return res.render("register");
         }
         passport.authenticate("local")(req, res, function(){
-           req.flash("success", "Sigend up new user: " + user.username);
+           req.flash("success", "Signed up new user: " + user.username);
            res.redirect("/index"); 
         });
     });
