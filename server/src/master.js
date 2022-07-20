@@ -9,7 +9,7 @@ function masterUser(){
             return console.log(err.message);
         }
         passport.authenticate("local")(req, res, function(){
-            console.log("Succesfully created master user");
+            console.log("Successfully created master user");
         });
     });
 }

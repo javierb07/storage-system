@@ -1,4 +1,5 @@
 # Intelligent Storage System
+
 An IoT system to monitor storage of materials in bins. A web interface is used to display the information of quantity over time, and other data, of the stock:
 
 ![web-gui](https://github.com/javierb07/storage-system/blob/master/images/system-info.jpeg)
