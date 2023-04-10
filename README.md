@@ -23,5 +23,3 @@ Uploading the code in storage_scale to the microcontroller a new entry in the se
 The final setup of the prototype looks like this:
 
 ![setup](https://github.com/javierb07/storage-system/blob/master/images/iss-setup.jpeg)
-
-Video example of the system: https://youtu.be/NZdVXT3DNc8
